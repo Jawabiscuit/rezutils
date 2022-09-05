@@ -18,13 +18,6 @@ import rez.config
 def get_root_python_path(this, env):
     """Format the root package path so that it's compatible with PYTHONPATH
     Works around some issues if platform is Windows and using gitbash
-
-    It is also advisable to add PYTHONPATH to the env_var_separators config.
-
-    Example:
-        env_var_separators = {
-            "PYTHONPATH": ";",
-        }
     """
     config = rez.config.create_config()
     shell = config.get("default_shell")
@@ -44,6 +37,13 @@ def set_root_python_path(this, env, *subdirs):
     """Prepend to PYTHONPATH the pre-processed root package path if it exists
     Concats and appends subdirs to then end of the root package path before setting
     """
+    config = rez.config.create_config()
+    shell = config.get("default_shell")
+    
+    if shell == "gitbash":
+        overrides = {"env_var_separators": {"PYTHONPATH": ";"}}
+        rez.config.create_config(overrides)
+
     if env.PACKAGE_ROOT_PYTHON_PATH:
         env.PYTHONPATH.prepend(os.path.join("${PACKAGE_ROOT_PYTHON_PATH}", *subdirs))
     else:
