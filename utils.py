@@ -1,4 +1,4 @@
-"""Utilities that can be used inside the `commands()` function in package.py
+"""Utilities that can be used at resolve-time, IOW inside the `commands()` function in package.py
 
 Read the rez wiki for configuring rez to enable usage of these utils.
 
@@ -18,18 +18,26 @@ import rez.config
 def get_root_python_path(this, env):
     """Format the root package path so that it's compatible with PYTHONPATH
     Works around some issues if platform is Windows and using gitbash
+
+    It is also advisable to add PYTHONPATH to the env_var_separators config.
+
+    Example:
+        env_var_separators = {
+            "PYTHONPATH": ";",
+        }
     """
     config = rez.config.create_config()
     shell = config.get("default_shell")
+    env.PACKAGE_ROOT_PYTHON_PATH = None
 
     if shell == "gitbash":
         cmd = "cygpath -m \"{root}\"".format(root=this.root)
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         out, err = p.communicate()
-
-        env.PACKAGE_ROOT_PYTHON_PATH = None
         if not p.returncode:
             env.PACKAGE_ROOT_PYTHON_PATH = out.strip()
+    else:
+        env.PACKAGE_ROOT_PYTHON_PATH = str(this.root)
 
 
 def set_root_python_path(this, env, *subdirs):
